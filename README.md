@@ -16,3 +16,7 @@ Bowl (Better OpenGL Wrapper Library) is a library, that offers a variety of adva
 
     window.run(|_handle| {});
 ```
+
+
+<hr>
+<sub>⚠ Seriously, do not take this serious</sub>
