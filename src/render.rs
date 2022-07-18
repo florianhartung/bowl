@@ -3,7 +3,51 @@ use std::process::exit;
 
 use gl::types::{GLenum, GLsizei, GLuint};
 
-pub fn compile_shader(src: &str, t: GLenum) -> GLuint {
+use crate::{opengl, shader, VertexArrayObject};
+use crate::opengl::{AttributeType, VertexBufferObject};
+use crate::shader::ShaderType;
+
+pub trait Renderable {
+    fn render(&self);
+}
+
+pub struct Triangle {
+    vertices: [f32; 9],
+    vao: VertexArrayObject,
+    vbo: VertexBufferObject,
+}
+
+impl Triangle {
+    pub fn new(vertices: [f32; 9]) -> Triangle {
+        let mut cloned_vertices = vertices.clone();
+        let mut vao = VertexArrayObject::new();
+        let vbo = VertexBufferObject::new(gl::ARRAY_BUFFER, &mut cloned_vertices, gl::STATIC_DRAW);
+
+        vao.add_attribute(3, AttributeType::FLOAT);
+
+        Triangle {
+            vertices: cloned_vertices,
+            vao,
+            vbo,
+        }
+    }
+
+    pub fn m(&mut self) {
+        self.vertices[0] = self.vertices[0] + 0.01;
+        self.vbo.load_data(&self.vertices);
+    }
+}
+
+impl Renderable for Triangle {
+    fn render(&self) {
+        self.vao.set();
+        unsafe {
+            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+        }
+    }
+}
+
+pub(crate) fn compile_shader(src: &str, t: GLenum) -> GLuint {
     unsafe {
         let vertex_shader = gl::CreateShader(t);
 
@@ -27,56 +71,31 @@ pub fn compile_shader(src: &str, t: GLenum) -> GLuint {
     }
 }
 
-pub fn create_shader_program(mut shaders: Vec<Shader>) -> GLuint {
+pub fn create_shader_program(shader_keys: &Vec<String>) -> GLuint {
     let shader_program;
     unsafe { shader_program = gl::CreateProgram(); }
 
-    for shader in &mut shaders {
-
-        let compiled_shader = compile_shader(shader.src, map_shader_type_to_glfw(&shader.r#type));
-        shader.glfw_shader = Some(compiled_shader);
-        unsafe { gl::AttachShader(shader_program, compiled_shader); }
+    for shader_key in shader_keys {
+        let a = shader::get(shader_key.as_str()).glfw_shader;
+        unsafe { gl::AttachShader(shader_program, a); }
     }
 
     unsafe {
         gl::LinkProgram(shader_program);
     }
 
-    for shader in shaders {
+    for shader_key in shader_keys {
         unsafe {
-            let glfw_shader = shader.glfw_shader.unwrap();
-            gl::DetachShader(shader_program, glfw_shader);
-            gl::DeleteShader(glfw_shader);
+            gl::DetachShader(shader_program, shader::get(shader_key.as_str()).glfw_shader);
         }
     }
 
     return shader_program;
 }
 
-fn map_shader_type_to_glfw(r#type: &ShaderType) -> GLenum {
+pub(crate) fn map_shader_type_to_glfw(r#type: &ShaderType) -> GLenum {
     match r#type {
         ShaderType::VERTEX => gl::VERTEX_SHADER,
         ShaderType::FRAGMENT => gl::FRAGMENT_SHADER,
-    }
-}
-
-pub enum ShaderType {
-    VERTEX,
-    FRAGMENT,
-}
-
-pub struct Shader<'a> {
-    pub src: &'a str,
-    pub r#type: ShaderType,
-    glfw_shader: Option<GLuint>,
-}
-
-impl Shader<'static> {
-    pub fn from(src: &str, r#type: ShaderType) -> Shader {
-        Shader {
-            src,
-            r#type,
-            glfw_shader: None,
-        }
     }
 }
