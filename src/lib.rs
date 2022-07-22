@@ -1,17 +1,16 @@
 extern crate core;
 
-use std::mem;
 use std::sync::mpsc::Receiver;
+use std::thread::sleep;
+use std::time::{Duration, SystemTime};
 
 use gl::types::{GLfloat, GLint, GLsizei};
-use glfw::{Action, Context, flush_messages, Glfw, Key, WindowEvent, WindowMode};
+use glfw::{Action, Context, flush_messages, Glfw, Key, SwapInterval, WindowEvent, WindowMode};
 use glfw::ffi::GLFWwindow;
 use glfw::WindowMode::{FullScreen, Windowed};
-
-use crate::opengl::AttributeType::FLOAT;
 use crate::opengl::VertexArrayObject;
 use crate::render::Renderable;
-use crate::shader::{ShaderProgram};
+use crate::shader::ShaderProgram;
 
 mod glfw_holder;
 pub mod render;
@@ -33,6 +32,7 @@ pub struct Window {
 
 pub struct WindowHandle<'a> {
     pub window: &'a mut Window,
+    pub dtime: u64,
 }
 
 impl WindowBuilder {
@@ -68,24 +68,38 @@ impl Window {
     pub fn run<F>(mut self, mut f: F)
         where F: FnMut(&mut WindowHandle)
     {
+        let fps:f32 = 60.0;
+        let mut last_frame_time = SystemTime::now();
         while !self.glfw_window.should_close() {
+            let now = SystemTime::now();
+            let mut dtime = now.duration_since(last_frame_time).unwrap().as_micros() as u64;
+            last_frame_time = now;
+            let a = 1_000_000.0 / fps;
+            let b = a as i64;
+            let c = b - dtime as i64;
+            let remaining_frame_time = c;
+            if remaining_frame_time > 0 {
+                dtime += remaining_frame_time as u64;
+                sleep(Duration::from_micros(remaining_frame_time as u64));
+            }
+
             self.glfw.poll_events();
             for (_, event) in flush_messages(&self.events) {
                 handle_window_event(&mut self.glfw_window, event);
             }
-            gl_clear(self.glfw_window.window_ptr());
+            gl_clear();
+
 
             let mut h = WindowHandle {
                 window: &mut self,
+                dtime,
             };
             f(&mut h);
+
             unsafe { glfw::ffi::glfwSwapBuffers(self.glfw_window.window_ptr()); }
         }
     }
 
-    pub(crate) fn draw_frame(&mut self) {
-        todo!("");
-    }
 }
 
 impl WindowHandle<'_> {
@@ -95,7 +109,7 @@ impl WindowHandle<'_> {
     }
 }
 
-extern "C" fn update_size(window: *mut GLFWwindow, width: GLint, height: GLint) {
+extern "C" fn update_size(_window: *mut GLFWwindow, width: GLint, height: GLint) {
     unsafe {
         gl::Viewport(0, 0, width, height);
         // let w: *mut Window = glfw::ffi::glfwGetWindowUserPointer(window) as *mut Window;
@@ -128,6 +142,7 @@ fn create_window(window_builder: &WindowBuilder) -> Window {
     }
 
     window.make_current();
+    glfw_instance.set_swap_interval(SwapInterval::None);
 
     gl::load_with(|s| glfw_instance.get_proc_address_raw(s));
 
@@ -142,7 +157,7 @@ fn create_window(window_builder: &WindowBuilder) -> Window {
     return w;
 }
 
-fn gl_clear(window: *mut GLFWwindow) {
+fn gl_clear() {
     unsafe {
         gl::ClearColor(0 as GLfloat, 0 as GLfloat, 0 as GLfloat, 1 as GLfloat);
         gl::Clear(gl::COLOR_BUFFER_BIT);

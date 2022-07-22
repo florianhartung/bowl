@@ -3,7 +3,7 @@ use std::process::exit;
 
 use gl::types::{GLenum, GLsizei, GLuint};
 
-use crate::{opengl, shader, VertexArrayObject};
+use crate::{shader, VertexArrayObject};
 use crate::opengl::{AttributeType, VertexBufferObject};
 use crate::shader::ShaderType;
 
@@ -11,38 +11,40 @@ pub trait Renderable {
     fn render(&self);
 }
 
-pub struct Triangle {
-    vertices: [f32; 9],
+pub struct Mesh {
+    vertices: Vec<f32>,
     vao: VertexArrayObject,
     vbo: VertexBufferObject,
 }
 
-impl Triangle {
-    pub fn new(vertices: [f32; 9]) -> Triangle {
-        let mut cloned_vertices = vertices.clone();
+impl Mesh {
+    pub fn new(vertices: &[f32]) -> Mesh {
+        let mut cloned_vertices = Vec::from(vertices.clone());
         let mut vao = VertexArrayObject::new();
-        let vbo = VertexBufferObject::new(gl::ARRAY_BUFFER, &mut cloned_vertices, gl::STATIC_DRAW);
+        let vbo = VertexBufferObject::new(gl::ARRAY_BUFFER, &mut cloned_vertices, gl::DYNAMIC_COPY);
 
         vao.add_attribute(3, AttributeType::FLOAT);
 
-        Triangle {
+        Mesh {
             vertices: cloned_vertices,
             vao,
             vbo,
         }
     }
 
-    pub fn m(&mut self) {
-        self.vertices[0] = self.vertices[0] + 0.01;
+    pub fn add_triangles(&mut self, triangle_vertices: &[f32]) {
+        for vertex in triangle_vertices {
+            self.vertices.push(*vertex);
+        }
         self.vbo.load_data(&self.vertices);
     }
 }
 
-impl Renderable for Triangle {
+impl Renderable for Mesh {
     fn render(&self) {
         self.vao.set();
         unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawArrays(gl::TRIANGLES, 0, (self.vertices.len() / 3) as GLsizei);
         }
     }
 }

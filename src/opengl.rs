@@ -1,4 +1,5 @@
-use std::mem;
+use std::mem::size_of_val;
+use std::os::raw::c_void;
 use std::ptr::null;
 
 use gl::types::{GLenum, GLint, GLsizei, GLsizeiptr};
@@ -18,6 +19,12 @@ pub struct VertexBufferObject {
     usage: GLenum,
 }
 
+fn map_type_to_gl_type(r#type: AttributeType) -> (GLenum, u32) {
+    match r#type {
+        AttributeType::FLOAT => (gl::FLOAT, 4),
+    }
+}
+
 impl VertexArrayObject {
     pub fn new() -> VertexArrayObject {
         let mut vao: u32 = 0;
@@ -30,9 +37,7 @@ impl VertexArrayObject {
         };
     }
     pub fn add_attribute(&mut self, size: GLint, r#type: AttributeType) {
-        let (glfw_type, type_size) = match r#type {
-            AttributeType::FLOAT => (gl::FLOAT, 4),
-        };
+        let (glfw_type, type_size) = map_type_to_gl_type(r#type);
 
         unsafe {
             gl::BindVertexArray(self.glfw_vao);
@@ -49,12 +54,12 @@ impl VertexArrayObject {
 }
 
 impl VertexBufferObject {
-    pub fn new<T>(r#type: GLenum, data: &T, usage: GLenum) -> VertexBufferObject {
+    pub fn new<T>(r#type: GLenum, data: &mut [T], usage: GLenum) -> VertexBufferObject {
         let mut buffer: u32 = 0;
         unsafe {
             gl::GenBuffers(1, &mut buffer);
             gl::BindBuffer(r#type, buffer);
-            gl::BufferData(r#type, mem::size_of_val(data) as GLsizeiptr, mem::transmute(data), usage);
+            gl::BufferData(r#type, size_of_val(data) as GLsizeiptr, data as *mut _ as *mut c_void, usage);
         }
 
         VertexBufferObject {
@@ -64,10 +69,10 @@ impl VertexBufferObject {
         }
     }
 
-    pub fn load_data<T>(&self, data: &T) {
+    pub fn load_data<T>(&self, data: &[T]) {
         unsafe {
             gl::BindBuffer(self.r#type, self.glfw_vbo);
-            gl::BufferData( self.r#type, mem::size_of_val(data) as GLsizeiptr, mem::transmute(data), self.usage);
+            gl::BufferData(self.r#type, size_of_val(data) as GLsizeiptr, data as *const _ as *const c_void, self.usage);
         }
     }
 }
