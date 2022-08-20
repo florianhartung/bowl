@@ -1,10 +1,9 @@
-use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
-
 fn main() {
-    let window = bowl::WindowBuilder::new()
+    let window = bowl::window::WindowBuilder::new()
         .size(800, 600)
         .fullscreen(false)
-        .create();
+        .create()
+        .expect("Could not initialize window");
 
 
     window.run(|handle| {

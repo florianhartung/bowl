@@ -1,13 +1,14 @@
 use bowl;
 use bowl::{register_program, shader};
-use bowl::render::Mesh;
+use bowl::renderable::Mesh;
 use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
 
 fn main() {
-    let window = bowl::WindowBuilder::new()
+    let window = bowl::window::WindowBuilder::new()
         .size(800, 600)
         .fullscreen(false)
-        .create();
+        .create()
+        .expect("Could not create bowl window!");
 
     let mut mesh = Mesh::new(&[]);
 
