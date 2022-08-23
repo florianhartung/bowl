@@ -1,4 +1,4 @@
-use bowl::{register_program, shader};
+use bowl::shader;
 use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
 
 use crate::circle::Circle;
@@ -16,10 +16,10 @@ fn main() {
     let circle = Circle::new((0.0, 0.0), 0.8, 500);
 
 
-    shader::register("default_vert", include_str!("./shader.vert"), VERTEX);
-    shader::register("default_frag", include_str!("./shader.frag"), FRAGMENT);
+    shader::new_shader("default_vert", include_str!("./shader.vert"), VERTEX);
+    shader::new_shader("default_frag", include_str!("./shader.frag"), FRAGMENT);
 
-    let program = register_program!("default_vert", "default_frag");
+    let program = shader::new_program(["default_vert", "default_frag"].to_vec());
 
 
     window.run(|handle| {

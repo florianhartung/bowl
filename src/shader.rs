@@ -1,9 +1,9 @@
 use std::collections::HashMap;
+use std::ffi::CString;
+use std::process::exit;
 
 use gl::types::{GLenum, GLsizei, GLuint};
 use once_cell::sync::OnceCell;
-use std::ffi::CString;
-use std::process::exit;
 
 static mut SHADERS: OnceCell<HashMap<String, Shader>> = OnceCell::new();
 
@@ -20,7 +20,7 @@ unsafe fn try_init_shaders_holder() {
     }
 }
 
-pub fn register(key: &str, src: &str, r#type: ShaderType) {
+pub fn new_shader(key: &str, src: &str, r#type: ShaderType) {
     let mut shader = Shader {
         r#type,
         glfw_shader: 0,
@@ -33,27 +33,6 @@ pub fn register(key: &str, src: &str, r#type: ShaderType) {
         try_init_shaders_holder();
         SHADERS.get_mut().unwrap().insert(shader.key.clone(), shader);
     }
-}
-
-#[macro_export]
-macro_rules! register_program {
-    ($( $key:literal),* ) => {
-        {
-            let mut temp_program = $crate::shader::ShaderProgram {
-                shaders: Vec::new(),
-                glfw_program: 0,
-            };
-
-            let mut temp_vec = Vec::new();
-            $(
-                temp_vec.push(String::from($key));
-            )*
-            // temp_program.shaders = temp_vec;
-            temp_program.glfw_program = $crate::shader::create_shader_program(&temp_vec);
-
-            temp_program
-        }
-    };
 }
 
 pub enum ShaderType {
@@ -104,31 +83,40 @@ pub(crate) fn compile_shader(src: &str, t: GLenum) -> GLuint {
     }
 }
 
-pub fn create_shader_program(shader_keys: &Vec<String>) -> GLuint {
-    let shader_program;
-    unsafe { shader_program = gl::CreateProgram(); }
-
-    for shader_key in shader_keys {
-        let a = get(shader_key.as_str()).glfw_shader;
-        unsafe { gl::AttachShader(shader_program, a); }
-    }
-
-    unsafe {
-        gl::LinkProgram(shader_program);
-    }
-
-    for shader_key in shader_keys {
-        unsafe {
-            gl::DetachShader(shader_program, get(shader_key.as_str()).glfw_shader);
-        }
-    }
-
-    return shader_program;
-}
-
 pub fn map_shader_type_to_glfw(r#type: &ShaderType) -> GLenum {
     match r#type {
         ShaderType::VERTEX => gl::VERTEX_SHADER,
         ShaderType::FRAGMENT => gl::FRAGMENT_SHADER,
     }
+}
+
+pub fn new_program(shader_keys: Vec<&str>) -> ShaderProgram {
+    let mut shader_program = ShaderProgram {
+        shaders: Vec::new(),
+        glfw_program: 0,
+    };
+
+    let gl_program = unsafe { gl::CreateProgram() };
+
+    let mut attached_shaders: Vec<GLuint> = Vec::new();
+    for shader_key in shader_keys {
+        let shader = get(shader_key).glfw_shader;
+        attached_shaders.push(shader);
+        unsafe {
+            gl::AttachShader(gl_program, shader);
+        }
+    }
+
+    unsafe {
+        gl::LinkProgram(gl_program);
+    }
+
+    unsafe {
+        for shader_key in attached_shaders {
+            gl::DetachShader(gl_program, shader_key);
+        }
+    }
+
+    shader_program.glfw_program = gl_program;
+    shader_program
 }
