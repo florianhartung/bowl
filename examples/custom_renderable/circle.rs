@@ -1,10 +1,14 @@
 use std::f32::consts::TAU;
+use std::ops::Add;
 
-use bowl::data::Type;
+use glam::{Vec2, Vec3};
+
 use bowl::data::buffer_mode::DrawMode;
+use bowl::data::Type;
 use bowl::data::vertex_array::VertexArray;
 use bowl::data::vertex_buffer::VertexBuffer;
 use bowl::data::vertex_buffer_layout::VertexBufferLayout;
+use bowl::gl_call;
 use bowl::renderable::Renderable;
 use bowl::vertex::Vertex;
 
@@ -14,19 +18,18 @@ pub(crate) struct Circle {
 }
 
 impl Circle {
-    pub(crate) fn new(center: (f32, f32), radius: f32, sides: i32) -> Circle {
+    pub(crate) fn new(center: Vec2, radius: f32, sides: i32) -> Circle {
         let mut vao = VertexArray::new();
 
         let mut vertices: Vec<Vertex> = Vec::new();
-        vertices.push(Vertex::new(center.0, center.1, 0.0));
+        vertices.push(Vertex::new(center.x, center.y, 0.0));
 
         for i in 0..=sides {
             let angle_radians = TAU * (i as f32 / sides as f32);
-            let offset = (radius * angle_radians.cos(), radius * angle_radians.sin());
+            let offset = Vec2::new(radius * angle_radians.cos(), radius * angle_radians.sin());
 
-            let (x, y) = (center.0 + offset.0, center.1 + offset.1);
-
-            vertices.push(Vertex::new(x, y, 0.0));
+            let position = Vec3::new(center.x + offset.x, center.y + offset.y, 0.0);
+            vertices.push(Vertex::from_vec(position));
         }
 
         let vb = VertexBuffer::new(vertices.as_slice(), DrawMode::STATIC);
@@ -45,8 +48,6 @@ impl Circle {
 impl Renderable for Circle {
     fn render(&self) {
         self.vao.bind();
-        unsafe {
-            gl::DrawArrays(gl::TRIANGLE_FAN, 0, self.sides + 2);
-        }
+        gl_call!(gl::DrawArrays(gl::TRIANGLE_FAN, 0, self.sides + 2));
     }
 }

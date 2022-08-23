@@ -1,3 +1,4 @@
+use glam::Vec2;
 use bowl::shader;
 use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
 
@@ -13,7 +14,7 @@ fn main() {
         .create()
         .expect("Could not create bowl window!");
 
-    let circle = Circle::new((0.0, 0.0), 0.8, 500);
+    let circle = Circle::new(Vec2::new(0.0, 0.0), 0.8, 500);
 
     let default_vert = shader::new_shader(VERTEX, include_str!("./shader.vert"));
     let default_frag = shader::new_shader(FRAGMENT, include_str!("./shader.frag"));
