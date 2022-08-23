@@ -38,10 +38,14 @@ fn random_triangle() -> Vec<Vertex> {
     let mut vertices = Vec::new();
     for _ in 0..=2 {
         vertices.push(Vertex::new(
-            2.0 * rand::random::<f32>() - 1.0,
-            2.0 * rand::random::<f32>() - 1.0,
+            rand_in_range(-1.0..1.0),
+            rand_in_range(-1.0..1.0),
             0.0));
     }
 
     return vertices;
+}
+
+fn rand_in_range(range: Range<f32>) -> f32 {
+    rand::random::<f32>() * (range.end - range.start) + range.start
 }
