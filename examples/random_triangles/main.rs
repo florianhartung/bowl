@@ -16,10 +16,10 @@ fn main() {
     let mut mesh = Mesh::new(Vec::new());
 
 
-    shader::new_shader("default_vert", include_str!("./shader.vert"), VERTEX);
-    shader::new_shader("default_frag", include_str!("./shader.frag"), FRAGMENT);
+    let default_vert = shader::new_shader(VERTEX, include_str!("./shader.vert"));
+    let default_frag = shader::new_shader(FRAGMENT, include_str!("./shader.frag"));
 
-    let program = shader::new_program(["default_vert", "default_frag"].to_vec());
+    let program = shader::new_program(vec![default_vert, default_frag]);
 
     let triangle_spawn_rate = 2 * 1000 * 1000; // one triangle every 2 seconds
 

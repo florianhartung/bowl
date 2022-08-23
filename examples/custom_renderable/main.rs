@@ -15,11 +15,10 @@ fn main() {
 
     let circle = Circle::new((0.0, 0.0), 0.8, 500);
 
+    let default_vert = shader::new_shader(VERTEX, include_str!("./shader.vert"));
+    let default_frag = shader::new_shader(FRAGMENT, include_str!("./shader.frag"));
 
-    shader::new_shader("default_vert", include_str!("./shader.vert"), VERTEX);
-    shader::new_shader("default_frag", include_str!("./shader.frag"), FRAGMENT);
-
-    let program = shader::new_program(["default_vert", "default_frag"].to_vec());
+    let program = shader::new_program(vec![default_vert, default_frag]);
 
 
     window.run(|handle| {
