@@ -1,42 +1,48 @@
-use crate::opengl::{AttributeType, VertexArrayObject, VertexBufferObject};
-use crate::renderable::Renderable;
 use gl::types::GLsizei;
+use crate::data::buffer_mode::DrawMode;
+
+use crate::data::Type;
+use crate::data::vertex_array::VertexArray;
+use crate::data::vertex_buffer::VertexBuffer;
+use crate::data::vertex_buffer_layout::VertexBufferLayout;
+use crate::renderable::Renderable;
+use crate::vertex::Vertex;
 
 pub struct Mesh {
-    vertices: Vec<f32>,
-    vao: VertexArrayObject,
-    vbo: VertexBufferObject,
+    vertices: Vec<Vertex>,
+    vao: VertexArray,
+    vbo: VertexBuffer,
 }
 
 impl Mesh {
-    pub fn new(vertices: &[f32]) -> Mesh {
-        let mut cloned_vertices = Vec::from(vertices.clone());
-        let mut vao = VertexArrayObject::new();
-        let vbo = VertexBufferObject::new(gl::ARRAY_BUFFER, &mut cloned_vertices, gl::DYNAMIC_COPY);
+    pub fn new(vertices: Vec<Vertex>) -> Mesh {
+        let mut va = VertexArray::new();
+        let vb = VertexBuffer::new(&vertices, DrawMode::DYNAMIC);
+        let mut layout = VertexBufferLayout::new();
 
-        vao.add_attribute(3, AttributeType::FLOAT);
-        vao.finalize_attributes();
+        layout.add_attribute(Type::Float, 3);
+        va.add_buffer(&vb, &layout);
 
         Mesh {
-            vertices: cloned_vertices,
-            vao,
-            vbo,
+            vertices,
+            vao: va,
+            vbo: vb,
         }
     }
 
-    pub fn add_triangles(&mut self, triangle_vertices: &[f32]) {
+    pub fn add_vertices(&mut self, triangle_vertices: Vec<Vertex>) {
         for vertex in triangle_vertices {
-            self.vertices.push(*vertex);
+            self.vertices.push(vertex);
         }
-        self.vbo.load_data(&self.vertices);
+        self.vbo.set_data(&self.vertices);
     }
 }
 
 impl Renderable for Mesh {
     fn render(&self) {
-        self.vao.set();
+        self.vao.bind();
         unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, (self.vertices.len() / 3) as GLsizei);
+            gl::DrawArrays(gl::TRIANGLES, 0, self.vertices.len() as GLsizei);
         }
     }
 }

@@ -2,6 +2,7 @@ use bowl;
 use bowl::{register_program, shader};
 use bowl::renderable::Mesh;
 use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
+use bowl::vertex::Vertex;
 
 fn main() {
     let window = bowl::window::WindowBuilder::new()
@@ -10,7 +11,7 @@ fn main() {
         .create()
         .expect("Could not create bowl window!");
 
-    let mut mesh = Mesh::new(&[]);
+    let mut mesh = Mesh::new(Vec::new());
 
 
     shader::register("default_vert", include_str!("./shader.vert"), VERTEX);
@@ -25,7 +26,7 @@ fn main() {
     window.run(|handle| {
         until_next_spawn -= handle.dtime as i32;
         if until_next_spawn <= 0 {
-            mesh.add_triangles(random_triangle().as_slice());
+            mesh.add_vertices(random_triangle());
             until_next_spawn += triangle_spawn_rate;
         }
 
@@ -33,12 +34,13 @@ fn main() {
     });
 }
 
-fn random_triangle() -> Vec<f32> {
+fn random_triangle() -> Vec<Vertex> {
     let mut vertices = Vec::new();
     for _ in 0..=2 {
-        vertices.push(2.0 * rand::random::<f32>() - 1.0);
-        vertices.push(2.0 * rand::random::<f32>() - 1.0);
-        vertices.push(0.0);
+        vertices.push(Vertex::new(
+            2.0 * rand::random::<f32>() - 1.0,
+            2.0 * rand::random::<f32>() - 1.0,
+            0.0));
     }
 
     return vertices;
