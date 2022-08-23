@@ -1,5 +1,9 @@
 use glam::Vec3;
 
+/// This struct represents a single vertex.
+///
+/// Note: The memory layout of this struct must match the layout
+/// of a vertex in the related shader written in GLSL
 pub struct Vertex {
     pub position: Vec3,
 }
