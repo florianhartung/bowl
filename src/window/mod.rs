@@ -1,5 +1,5 @@
 use core::option::Option;
-use std::os::raw::{c_char, c_int};
+use std::os::raw::c_int;
 use std::ptr::null_mut;
 
 use gl::types::GLfloat;
@@ -10,6 +10,7 @@ use fps_timer::FPSTimer;
 
 use crate::renderable::Renderable;
 use crate::shader::ShaderProgram;
+use crate::util::string_to_c_string;
 
 mod fps_timer;
 mod glfw_initializer;
@@ -74,7 +75,7 @@ impl WindowBuilder {
         let glfw_window = unsafe {
             glfwCreateWindow(self.width as c_int,
                              self.height as c_int,
-                             "title\0".as_bytes().as_ptr() as *const c_char,
+                             string_to_c_string(self.title).as_ptr(),
                              null_mut(),
                              null_mut())
         };
