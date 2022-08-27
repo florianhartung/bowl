@@ -1,9 +1,10 @@
 use std::ffi::CString;
 use std::process::exit;
 
-use gl::types::{GLenum, GLsizei, GLuint};
+use gl::types::{GLenum, GLint, GLsizei, GLuint};
 
 use crate::gl_call;
+use crate::util::string_to_c_string;
 
 pub fn new_shader(r#type: ShaderType, src: &str) -> Shader {
     Shader {
@@ -31,6 +32,44 @@ pub struct ShaderProgram {
 impl ShaderProgram {
     pub fn set(&self) {
         gl_call!(gl::UseProgram(self.glfw_program));
+    }
+
+    pub fn set_uniform_float(&self, name: &str, data: Vec<f32>) {
+        self.internal_set_uniform(name, &data, match data.len() {
+            1 => gl::Uniform1fv,
+            2 => gl::Uniform2fv,
+            3 => gl::Uniform3fv,
+            4 => gl::Uniform4fv,
+            _ => panic!("[Bowl] Could not set shader uniform '{}' of type unsigned int with size {}", name, data.len()),
+        });
+    }
+
+    pub fn set_uniform_int(&self, name: &str, data: Vec<i32>) {
+        self.internal_set_uniform(name, &data, match data.len() {
+            1 => gl::Uniform1iv,
+            2 => gl::Uniform2iv,
+            3 => gl::Uniform3iv,
+            4 => gl::Uniform4iv,
+            _ => panic!("[Bowl] Could not set shader uniform '{}' of type unsigned int with size {}", name, data.len()),
+        });
+    }
+
+    pub fn set_uniform_uint(&self, name: &str, data: Vec<u32>) {
+        self.internal_set_uniform(name, &data, match data.len() {
+            1 => gl::Uniform1uiv,
+            2 => gl::Uniform2uiv,
+            3 => gl::Uniform3uiv,
+            4 => gl::Uniform4uiv,
+            _ => panic!("[Bowl] Could not set shader uniform '{}' of type unsigned int with size {}", name, data.len()),
+        });
+    }
+
+    fn internal_set_uniform<T>(&self, name: &str, data: &Vec<T>, gl_function: unsafe fn(GLint, GLsizei, *const T)) {
+        let uniform_location = gl_call!(gl::GetUniformLocation(self.glfw_program, string_to_c_string(name).as_ptr()));
+
+        if uniform_location >= 0 {
+            gl_call!(gl_function(uniform_location, data.len() as GLsizei, data.as_slice().as_ptr()));
+        }
     }
 }
 

@@ -75,7 +75,7 @@ impl WindowBuilder {
         let glfw_window = unsafe {
             glfwCreateWindow(self.width as c_int,
                              self.height as c_int,
-                             string_to_c_string(self.title).as_ptr(),
+                             string_to_c_string(&self.title).as_ptr(),
                              null_mut(),
                              null_mut())
         };
