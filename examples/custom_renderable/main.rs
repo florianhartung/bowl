@@ -1,5 +1,6 @@
 use glam::Vec2;
-use bowl::shader;
+
+use bowl::shader::{Shader, ShaderProgram};
 use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
 
 use crate::circle::Circle;
@@ -16,10 +17,10 @@ fn main() {
 
     let circle = Circle::new(Vec2::new(0.0, 0.0), 0.8, 500);
 
-    let default_vert = shader::new_shader(VERTEX, include_str!("./shader.vert"));
-    let default_frag = shader::new_shader(FRAGMENT, include_str!("./shader.frag"));
+    let default_vert = Shader::new(VERTEX, include_str!("./shader.vert"));
+    let default_frag = Shader::new(FRAGMENT, include_str!("./shader.frag"));
 
-    let program = shader::new_program(vec![default_vert, default_frag]);
+    let program = ShaderProgram::new(vec![default_vert, default_frag]);
 
 
     window.run(|handle| {

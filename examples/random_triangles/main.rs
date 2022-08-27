@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use bowl;
 use bowl::renderable::Mesh;
-use bowl::shader;
+use bowl::shader::{Shader, ShaderProgram};
 use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
 use bowl::vertex::Vertex;
 
@@ -16,10 +16,10 @@ fn main() {
     let mut mesh = Mesh::new(Vec::new());
 
 
-    let default_vert = shader::new_shader(VERTEX, include_str!("./shader.vert"));
-    let default_frag = shader::new_shader(FRAGMENT, include_str!("./shader.frag"));
+    let default_vert = Shader::new(VERTEX, include_str!("./shader.vert"));
+    let default_frag = Shader::new(FRAGMENT, include_str!("./shader.frag"));
 
-    let program = shader::new_program(vec![default_vert, default_frag]);
+    let program = ShaderProgram::new(vec![default_vert, default_frag]);
 
     let triangle_spawn_rate = 2 * 1000 * 1000; // one triangle every 2 seconds
 
