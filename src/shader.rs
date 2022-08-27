@@ -40,7 +40,7 @@ impl ShaderProgram {
             2 => gl::Uniform2fv,
             3 => gl::Uniform3fv,
             4 => gl::Uniform4fv,
-            _ => panic!("[Bowl] Could not set shader uniform '{}' of type unsigned int with size {}", name, data.len()),
+            _ => panic!("[Bowl] Could not set shader uniform '{}' of type float with size {}", name, data.len()),
         });
     }
 
@@ -50,7 +50,7 @@ impl ShaderProgram {
             2 => gl::Uniform2iv,
             3 => gl::Uniform3iv,
             4 => gl::Uniform4iv,
-            _ => panic!("[Bowl] Could not set shader uniform '{}' of type unsigned int with size {}", name, data.len()),
+            _ => panic!("[Bowl] Could not set shader uniform '{}' of type signed int with size {}", name, data.len()),
         });
     }
 
@@ -67,6 +67,8 @@ impl ShaderProgram {
     fn internal_set_uniform<T>(&self, name: &str, data: &Vec<T>, gl_function: unsafe fn(GLint, GLsizei, *const T)) {
         let uniform_location = gl_call!(gl::GetUniformLocation(self.opengl_id, string_to_c_string(name).as_ptr()));
 
+        // A uniform location of -1 is returned when the requested uniform is not used in the shaders.
+        // Thus only uniforms with valid uniform locations ( >= 0 ) can be set
         if uniform_location >= 0 {
             gl_call!(gl_function(uniform_location, data.len() as GLsizei, data.as_slice().as_ptr()));
         }
