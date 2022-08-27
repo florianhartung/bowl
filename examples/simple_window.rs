@@ -5,7 +5,7 @@ fn main() {
         .size(800, 600)
         .fullscreen(false)
         .create()
-        .expect("Could not initialze window");
+        .expect("Could not initialize window");
 
     window.run(|_handle| {});
 }
