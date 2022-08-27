@@ -32,7 +32,7 @@ fn main() {
         sin_wave_generator.pass_time(handle.dtime);
         let current_brightness = sin_wave_generator.calc_current();
 
-        program.set();
+        program.bind();
         program.set_uniform_float("triangleBrightness", vec![current_brightness]);
         handle.render(&triangle, &program);
     });

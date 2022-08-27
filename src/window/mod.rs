@@ -106,7 +106,7 @@ impl WindowBuilder {
 
 impl WindowHandle<'_> {
     pub fn render(&self, renderable: &impl Renderable, shader_program: &ShaderProgram) {
-        shader_program.set();
+        shader_program.bind();
         renderable.render();
     }
 }

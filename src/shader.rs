@@ -30,7 +30,7 @@ pub struct ShaderProgram {
 }
 
 impl ShaderProgram {
-    pub fn set(&self) {
+    pub fn bind(&self) {
         gl_call!(gl::UseProgram(self.opengl_id));
     }
 
