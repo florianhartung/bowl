@@ -9,7 +9,7 @@ use crate::util::string_to_c_string;
 pub fn new_shader(r#type: ShaderType, src: &str) -> Shader {
     Shader {
         r#type,
-        glfw_shader: compile_shader(r#type, src),
+        opengl_id: compile_shader(r#type, src),
     }
 }
 
@@ -21,17 +21,17 @@ pub enum ShaderType {
 
 pub struct Shader {
     pub r#type: ShaderType,
-    pub glfw_shader: GLuint,
+    pub opengl_id: GLuint,
 }
 
 pub struct ShaderProgram {
     pub shaders: Vec<String>,
-    pub glfw_program: GLuint,
+    pub opengl_id: GLuint,
 }
 
 impl ShaderProgram {
     pub fn set(&self) {
-        gl_call!(gl::UseProgram(self.glfw_program));
+        gl_call!(gl::UseProgram(self.opengl_id));
     }
 
     pub fn set_uniform_float(&self, name: &str, data: Vec<f32>) {
@@ -65,7 +65,7 @@ impl ShaderProgram {
     }
 
     fn internal_set_uniform<T>(&self, name: &str, data: &Vec<T>, gl_function: unsafe fn(GLint, GLsizei, *const T)) {
-        let uniform_location = gl_call!(gl::GetUniformLocation(self.glfw_program, string_to_c_string(name).as_ptr()));
+        let uniform_location = gl_call!(gl::GetUniformLocation(self.opengl_id, string_to_c_string(name).as_ptr()));
 
         if uniform_location >= 0 {
             gl_call!(gl_function(uniform_location, data.len() as GLsizei, data.as_slice().as_ptr()));
@@ -75,7 +75,7 @@ impl ShaderProgram {
 
 impl Drop for ShaderProgram {
     fn drop(&mut self) {
-        gl_call!(gl::DeleteProgram(self.glfw_program));
+        gl_call!(gl::DeleteProgram(self.opengl_id));
     }
 }
 
@@ -113,22 +113,22 @@ pub fn map_shader_type_to_glfw(r#type: ShaderType) -> GLenum {
 pub fn new_program(shaders: Vec<Shader>) -> ShaderProgram {
     let mut shader_program = ShaderProgram {
         shaders: Vec::new(),
-        glfw_program: 0,
+        opengl_id: 0,
     };
 
     let gl_program = gl_call!(gl::CreateProgram());
 
     for shader in &shaders {
-        let shader = shader.glfw_shader;
+        let shader = shader.opengl_id;
         gl_call!(gl::AttachShader(gl_program, shader));
     }
 
     gl_call!(gl::LinkProgram(gl_program));
 
     for shader in shaders {
-        gl_call!(gl::DetachShader(gl_program, shader.glfw_shader));
+        gl_call!(gl::DetachShader(gl_program, shader.opengl_id));
     }
 
-    shader_program.glfw_program = gl_program;
+    shader_program.opengl_id = gl_program;
     shader_program
 }
