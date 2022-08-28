@@ -2,10 +2,10 @@ use std::ffi::CString;
 use std::process::exit;
 
 use gl::types::{GLenum, GLint, GLsizei, GLuint};
+use glam::Mat4;
 
 use crate::gl_call;
 use crate::util::string_to_c_string;
-
 
 #[derive(Clone, Copy)]
 pub enum ShaderType {
@@ -110,14 +110,27 @@ impl ShaderProgram {
         });
     }
 
+    pub fn set_uniform_mat4(&self, name: &str, data: Mat4) {
+        if let Some(uniform_location) = self.get_uniform_location(name) {
+            gl_call!(gl::UniformMatrix4fv(uniform_location, 1, 0, data.to_cols_array().as_ptr()));
+        }
+    }
+
     fn internal_set_uniform_vector<T>(&self, name: &str, data: &Vec<T>, gl_function: unsafe fn(GLint, GLsizei, *const T)) {
+        if let Some(uniform_location) = self.get_uniform_location(name) {
+            gl_call!(gl_function(uniform_location, data.len() as GLsizei, data.as_slice().as_ptr()));
+        }
+    }
+
+    fn get_uniform_location(&self, name: &str) -> Option<GLint> {
         let uniform_location = gl_call!(gl::GetUniformLocation(self.opengl_id, string_to_c_string(name).as_ptr()));
 
         // A uniform location of -1 is returned when the requested uniform is not used in the shaders.
         // Thus only uniforms with valid uniform locations ( >= 0 ) can be set
-        if uniform_location >= 0 {
-            gl_call!(gl_function(uniform_location, data.len() as GLsizei, data.as_slice().as_ptr()));
+        if uniform_location == -1 {
+            return None;
         }
+        Some(uniform_location)
     }
 }
 

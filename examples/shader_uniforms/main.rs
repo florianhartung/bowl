@@ -1,3 +1,4 @@
+use glam::Vec3;
 use bowl::renderable::Mesh;
 use bowl::shader::{Shader, ShaderProgram};
 use bowl::shader::ShaderType::{FRAGMENT, VERTEX};
@@ -15,9 +16,9 @@ fn main() {
         .expect("Could not create bowl window!");
 
     let triangle = Mesh::new(vec![
-        Vertex::new(-0.5, -0.5, 0.0),
-        Vertex::new(0.5, -0.5, 0.0),
-        Vertex::new(0.0, 0.5, 0.0),
+        Vertex::from_position(Vec3::new(-0.5, -0.5, 0.0)),
+        Vertex::from_position(Vec3::new(0.5, -0.5, 0.0)),
+        Vertex::from_position(Vec3::new(0.0, 0.5, 0.0)),
     ]);
 
 

@@ -1,4 +1,4 @@
-use glam::Vec3;
+use glam::{Vec2, Vec3};
 
 /// This struct represents a single vertex.
 ///
@@ -6,18 +6,24 @@ use glam::Vec3;
 /// of a vertex in the related shader written in GLSL
 pub struct Vertex {
     pub position: Vec3,
+    pub color: Vec3,
+    pub texture_coordinates: Vec2,
 }
 
 impl Vertex {
-    pub fn from_vec(position: Vec3) -> Self {
-        Self { position }
+    pub fn from_position(position: Vec3) -> Self {
+        Self::from(
+            position,
+            Vec3::new(1.0, 0.0, 0.0),
+            Vec2::new(0.0, 0.0),
+        )
     }
 
-    pub fn from_array(position: [f32; 3]) -> Self {
-        Self::from_vec(Vec3::from_array(position))
-    }
-
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Self::from_vec(Vec3::new(x, y, z))
+    pub fn from(position: Vec3, color: Vec3, texture_coordinates: Vec2) -> Self {
+        Self {
+            position,
+            color,
+            texture_coordinates,
+        }
     }
 }

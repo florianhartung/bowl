@@ -7,6 +7,9 @@ use crate::circle::Circle;
 
 mod circle;
 
+const PRINT_FPS: bool = false;
+
+//noinspection RsConstantConditionIf
 fn main() {
     let window = bowl::window::WindowBuilder::new()
         .size(800, 800)
@@ -24,7 +27,7 @@ fn main() {
 
 
     window.run(|handle| {
-        if handle.dtime > 0 {
+        if PRINT_FPS && handle.dtime > 0 {
             println!("{}", 1_000_000.0 / handle.dtime as f32);
         }
         handle.render(&circle, &program);

@@ -21,6 +21,8 @@ impl Mesh {
         let mut layout = VertexBufferLayout::new();
 
         layout.add_attribute(Type::Float, 3);
+        layout.add_attribute(Type::Float, 3);
+        layout.add_attribute(Type::Float, 2);
         va.add_buffer(&vb, &layout);
 
         Mesh {

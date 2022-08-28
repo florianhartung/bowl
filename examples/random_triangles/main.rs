@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+use glam::{Vec2, Vec3};
+
 use bowl;
 use bowl::renderable::Mesh;
 use bowl::shader::{Shader, ShaderProgram};
@@ -37,12 +39,21 @@ fn main() {
 }
 
 fn random_triangle() -> Vec<Vertex> {
+    let triangle_color = Vec3::new(
+        rand_in_range(0.0..1.0),
+        rand_in_range(0.0..1.0),
+        rand_in_range(0.0..1.0),
+    );
+
     let mut vertices = Vec::new();
     for _ in 0..=2 {
-        vertices.push(Vertex::new(
+        let vertex_position = Vec3::new(
             rand_in_range(-1.0..1.0),
             rand_in_range(-1.0..1.0),
-            0.0));
+            0.0,
+        );
+
+        vertices.push(Vertex::from(vertex_position, triangle_color, Vec2::new(0.0, 0.0)));
     }
 
     return vertices;
