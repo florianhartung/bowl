@@ -37,9 +37,9 @@ impl Shader {
         let shader = gl_call!(gl::CreateShader(r#type));
 
         gl_call!(
-        gl::ShaderSource(shader, 1, &(src.as_bytes().as_ptr().cast()), &src.len().try_into().unwrap()),
-        gl::CompileShader(shader),
-    );
+            gl::ShaderSource(shader, 1, &(src.as_bytes().as_ptr().cast()), &src.len().try_into().unwrap()),
+            gl::CompileShader(shader),
+        );
 
         let mut success: i32 = 0;
 
