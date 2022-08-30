@@ -109,6 +109,14 @@ impl WindowHandle<'_> {
         shader_program.bind();
         renderable.render();
     }
+
+    pub fn render3d(&self, renderable: &impl Renderable, shader_program: &ShaderProgram) {
+        shader_program.bind();
+
+        // TODO
+
+        renderable.render();
+    }
 }
 
 impl Window {

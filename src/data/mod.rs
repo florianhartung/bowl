@@ -5,6 +5,7 @@ pub mod vertex_array;
 pub mod indices_array;
 pub mod vertex_buffer_layout;
 pub mod buffer_mode;
+pub mod image;
 
 #[derive(Clone, Copy)]
 pub enum Type {
